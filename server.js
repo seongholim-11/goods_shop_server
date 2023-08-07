@@ -17,7 +17,7 @@ const upload = multer({
 
 app.use(express.json());
 app.use(cors()); // 브라우저의 cors 이슈를 막기 위해 사용하는 코드
-app.use('/uploads', express.static("uploads"))
+app.use("/uploads", express.static("uploads"));
 
 app.get("/products", (req, res) => {
     models.Product.findAll(
@@ -31,6 +31,7 @@ app.get("/products", (req, res) => {
                 "seller",
                 "imageUrl",
                 "createdAt",
+                "soldout",
             ],
         }
     )
@@ -98,6 +99,30 @@ app.post("/image", upload.single("image"), (req, res) => {
     res.send({
         imageUrl: file.path,
     });
+});
+
+app.post("/purchase/:id", (req, res) => {
+    const { id } = req.params;
+    models.Product.update(
+        {
+            soldout: 1,
+        },
+        {
+            where: {
+                id,
+            },
+        }
+    )
+        .then((result) => {
+            console.log(res);
+            res.send({
+                result: true,
+            });
+        })
+        .catch((err) => {
+            console.error(err);
+            res.status(500).send("에러발생");
+        });
 });
 
 app.listen(port, () => {
